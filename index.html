@@ -1,184 +1,30 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Personal Finance Goals</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Finance Goals Chart</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
-    h1 { margin: 0 0 12px; font-size: 20px; }
-    .wrap { max-width: 1100px; margin: auto; display: grid; gap: 24px; }
-    .card { padding: 16px; border: 1px solid #eee; border-radius: 10px; }
-    .note { font-size: 12px; opacity: .8 }
-    canvas { width: 100%; height: 420px; }
-    #donut { height: 280px; }
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f9f9f9;
+    }
+    iframe {
+      border: none;
+      width: 90%;
+      height: 90%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 8px;
+      background: white;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Progress by Goal</h1>
-      <canvas id="byGoal"></canvas>
-      <p class="note">Shows Current vs Remaining to reach Target (stacked). Data is read from your published Google Sheet.</p>
-    </div>
-
-    <div class="card">
-      <h1>Overall Progress</h1>
-      <canvas id="donut"></canvas>
-      <p id="overallText" class="note"></p>
-    </div>
-
-    <div class="card">
-      <h1>Data source</h1>
-      <p class="note">Update your sheet and republish to refresh. (You can add more rows—headers are auto-detected.)</p>
-      <pre id="status" class="note"></pre>
-    </div>
-  </div>
-
-  <script>
-    // 1) PASTE YOUR PUBLISHED CSV URL HERE
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSPIt3XnWyIWeWPkalQ8bUJrmaoWJpELeygm31-l4bqpLpbPfeMdsu7Z1B2rPXiFmPCLZanf16RmCQM/pubhtml?gid=0&single=true';
-
-    // 2) Helper: coerce currency/percent/number strings to Number
-    const toNum = (v) => {
-      if (v == null) return 0;
-      const s = String(v).trim()
-        .replace(/£/g, '')
-        .replace(/,/g, '')
-        .replace(/%/g, '');
-      const n = Number(s);
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    // 3) Load & parse CSV (robust to commas/quotes) via PapaParse
-    function loadCSV(url){
-      return new Promise((resolve, reject) => {
-        Papa.parse(url, {
-          download: true,
-          header: true,
-          dynamicTyping: false,
-          skipEmptyLines: true,
-          complete: (res) => resolve(res.data),
-          error: reject
-        });
-      });
-    }
-
-    // 4) Build charts
-    (async function init(){
-      const statusEl = document.getElementById('status');
-      statusEl.textContent = 'Loading…';
-      try {
-        const rows = await loadCSV(csvUrl);
-
-        // Map columns by (case-insensitive) header names
-        const key = (h) => h?.toString().trim().toLowerCase();
-        const headers = rows.length ? Object.keys(rows[0]) : [];
-        const findCol = (nameOpts) =>
-          headers.find(h => nameOpts.includes(key(h)));
-
-        const colGoal    = findCol(['goal']);
-        const colTarget  = findCol(['target','target amount']);
-        const colCurrent = findCol(['current','current amount']);
-        const colProg    = findCol(['progress','progress (%)','progress %']);
-        const colDate    = findCol(['date','deadline']);
-
-        if(!colGoal || (!colTarget && !colProg)){
-          statusEl.textContent =
-            'Could not find expected headers. Expect at least "Goal" and "Target" (or "Progress").';
-          return;
-        }
-
-        // Prepare datasets
-        const labels = [];
-        const currentVals = [];
-        const remainingVals = [];
-
-        rows.forEach(r => {
-          const goal = r[colGoal];
-          const target = toNum(r[colTarget]);
-          const current = colCurrent ? toNum(r[colCurrent])
-                         : (colProg ? (toNum(r[colProg])/100)*target : 0);
-
-          const remaining = Math.max(target - current, 0);
-
-          labels.push(goal);
-          currentVals.push(current);
-          remainingVals.push(remaining);
-        });
-
-        // Overall progress
-        const totalCurrent = currentVals.reduce((a,b)=>a+b,0);
-        const totalTarget  = currentVals.map((v,i)=>v+remainingVals[i]).reduce((a,b)=>a+b,0);
-        const overallPct   = totalTarget>0 ? Math.round((totalCurrent/totalTarget)*100) : 0;
-
-        // Chart 1: Stacked horizontal bar (Current vs Remaining)
-        new Chart(document.getElementById('byGoal'), {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [
-              { label: 'Current',   data: currentVals,  backgroundColor: 'rgba(54, 162, 235, 0.8)' },
-              { label: 'Remaining', data: remainingVals, backgroundColor: 'rgba(201, 203, 207, 0.6)' }
-            ]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            interaction: { mode: 'nearest', axis: 'y', intersect: false },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  afterBody: (ctx) => {
-                    const i = ctx[0].dataIndex;
-                    const targ = currentVals[i] + remainingVals[i];
-                    const pct = targ>0 ? ((currentVals[i]/targ)*100).toFixed(1) : '0.0';
-                    return `Progress: ${pct}%  |  Target: £${targ.toLocaleString()}`;
-                  }
-                }
-              },
-              legend: { position: 'top' },
-              title: { display: false }
-            },
-            scales: {
-              x: { stacked: true, ticks: { callback: v => '£'+Number(v).toLocaleString() } },
-              y: { stacked: true }
-            }
-          }
-        });
-
-        // Chart 2: Overall progress donut
-        new Chart(document.getElementById('donut'), {
-          type: 'doughnut',
-          data: {
-            labels: ['Completed','Remaining'],
-            datasets: [{
-              data: [totalCurrent, Math.max(totalTarget-totalCurrent,0)],
-              backgroundColor: ['rgba(75, 192, 192, 0.85)', 'rgba(201, 203, 207, 0.6)']
-            }]
-          },
-          options: {
-            cutout: '65%',
-            plugins: {
-              legend: { position: 'bottom' },
-              tooltip: { callbacks: {
-                label: (ctx) => ' £' + Number(ctx.parsed).toLocaleString()
-              }}
-            }
-          }
-        });
-
-        document.getElementById('overallText').textContent =
-          `Overall: ${overallPct}% of £${totalTarget.toLocaleString()} target achieved ( £${totalCurrent.toLocaleString()} so far ).`;
-
-        statusEl.textContent = 'Loaded from: ' + csvUrl;
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = 'Error loading data. Check that your sheet is published as CSV and the link is correct.';
-      }
-    })();
-  </script>
+  <!-- Replace the src below with the Embed URL from Google Sheets (Insert → Chart → Publish chart → Embed) -->
+  <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSPIt3XnWyIWeWPkalQ8bUJrmaoWJpELeygm31-l4bqpLpbPfeMdsu7Z1B2rPXiFmPCLZanf16RmCQM/pubhtml?gid=110936015&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
 </body>
 </html>
