@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finance</title>
+  <style>
+    :root{
+      --gold:#B39553;
+      --nearwhite:#FCFCFC;
+      --ltgray:#CECDCC;
+      --dkgray:#393733;
+      --white:#FFFFFF;
+      --black:#000000;
+      --card-bg: var(--white);
+      --page-bg: var(--nearwhite);
+      --text: var(--dkgray);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;overflow:hidden;background:var(--page-bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
+    .wrap{display:flex;flex-direction:column;min-height:100dvh}
+    header{
+      display:flex;align-items:center;gap:.75rem;
+      padding:16px clamp(16px,3vw,28px);
+      background:linear-gradient(180deg, rgba(185,149,83,.18), rgba(185,149,83,0));
+      border-bottom:1px solid var(--ltgray);
+    }
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
+    h1{font-size:clamp(16px,2.6vw,20px);margin:0;font-weight:600;letter-spacing:.2px}
+    main{
+      flex:1;display:flex;align-items:center;justify-content:center;
+      padding:clamp(10px,2.5vw,20px);
+      /* prevent page scrollbars even if the iframe content tries */
+      overflow:hidden;
+    }
+    .frame-shell{
+      width:min(1200px,100%);
+      height:calc(100dvh - 70px); /* viewport minus header */
+      background:var(--card-bg);
+      border:1px solid var(--ltgray);
+      border-radius:14px;
+      box-shadow:0 6px 24px rgba(0,0,0,.12);
+      overflow:hidden; /* clips any iframe overflow */
+    }
+    iframe{
+      display:block;
+      width:100%;
+      height:100%;
+      border:0;
+      background:var(--white);
+    }
+    /* subtle focus style if navigating with keyboard */
+    .frame-shell:focus-within{outline:2px solid var(--gold); outline-offset:2px}
+    @media (max-width:600px){
+      header{padding:12px 14px}
+      .frame-shell{border-radius:10px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="dot" aria-hidden="true"></span>
+      <h1>Finance</h1>
+    </header>
+    <main>
+      <div class="frame-shell" role="region" aria-label="Finance embed">
+        <!-- Replace src with your embed URL -->
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSPIt3XnWyIWeWPkalQ8bUJrmaoWJpELeygm31-l4bqpLpbPfeMdsu7Z1B2rPXiFmPCLZanf16RmCQM/pubhtml?gid=110936015&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
