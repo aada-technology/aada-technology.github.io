@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embed Template</title>
+    <title>Embed Page Generator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -13,6 +13,7 @@
             --text-on-dark: #f5f7fa;
             --text-on-light: #333;
             --shadow: rgba(2, 35, 80, 0.15);
+            --light-bg: #f8fafc;
         }
         
         * {
@@ -23,7 +24,7 @@
         }
         
         body {
-            background-color: #f9fafb;
+            background-color: var(--light-bg);
             color: var(--text-on-light);
             line-height: 1.6;
             padding: 20px;
@@ -37,10 +38,13 @@
         header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary);
+            color: var(--text-on-dark);
+            border-radius: 10px;
         }
         
         h1 {
-            color: var(--primary);
             margin-bottom: 10px;
         }
         
@@ -66,19 +70,30 @@
             margin-bottom: 10px;
         }
         
-        .instructions code {
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
+        .form-container {
+            background: var(--secondary);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 30px;
         }
         
-        .embed-generator {
-            background: var(--secondary);
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px var(--shadow);
-            margin-bottom: 30px;
+        .form-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .form-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-section h3 i {
+            font-size: 1.2rem;
         }
         
         .form-group {
@@ -92,7 +107,7 @@
             color: var(--primary);
         }
         
-        input[type="url"], input[type="text"] {
+        input[type="text"], input[type="url"], textarea, select {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e2e8f0;
@@ -101,21 +116,29 @@
             transition: border-color 0.3s;
         }
         
-        input[type="url"]:focus, input[type="text"]:focus {
+        input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus {
             border-color: var(--primary);
             outline: none;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
         }
         
         button {
             background: var(--primary);
             color: var(--secondary);
             border: none;
-            padding: 12px 25px;
+            padding: 14px 28px;
             border-radius: 6px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
         button:hover {
@@ -123,7 +146,7 @@
         }
         
         .preview-container {
-            margin-top: 30px;
+            margin-top: 40px;
         }
         
         .preview-header {
@@ -141,8 +164,8 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -154,15 +177,13 @@
         }
         
         .embed-preview {
-            background: #f8fafc;
+            background: #f1f5f9;
             border: 2px dashed #cbd5e1;
             border-radius: 8px;
             padding: 20px;
             overflow-x: auto;
-        }
-        
-        .code-container {
-            position: relative;
+            max-height: 400px;
+            overflow-y: auto;
         }
         
         pre {
@@ -174,35 +195,6 @@
             color: var(--text-on-light);
         }
         
-        .example-embeds {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        
-        .example-card {
-            background: var(--secondary);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px var(--shadow);
-        }
-        
-        .example-header {
-            background: var(--primary);
-            color: var(--text-on-dark);
-            padding: 15px;
-            font-weight: 600;
-        }
-        
-        .example-body {
-            padding: 20px;
-        }
-        
-        .example-body p {
-            margin-bottom: 15px;
-        }
-        
         footer {
             text-align: center;
             margin-top: 50px;
@@ -211,9 +203,36 @@
             font-size: 14px;
         }
         
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
         @media (max-width: 768px) {
-            .example-embeds {
-                grid-template-columns: 1fr;
+            .form-container {
+                padding: 20px;
+            }
+            
+            .preview-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
         }
     </style>
@@ -221,131 +240,305 @@
 <body>
     <div class="container">
         <header>
-            <h1>Embed Template Generator</h1>
-            <p>Quickly create responsive embeds with your brand colors</p>
+            <h1>Embed Page Generator</h1>
+            <p>Create a complete responsive HTML page with your embedded content</p>
         </header>
         
         <section class="instructions">
-            <h2>How to Use This Template</h2>
+            <h2>How to Use This Generator</h2>
             <ol>
-                <li>Enter your content URL and optional height in the form below</li>
-                <li>Click "Generate Embed Code" to create your customized code</li>
-                <li>Copy the code using the copy button</li>
-                <li>Paste the code into your website or application</li>
+                <li>Fill in all the details about your embedded content</li>
+                <li>Provide the URL you want to embed (video, map, calendar, etc.)</li>
+                <li>Customize the page title, description, and other metadata</li>
+                <li>Click "Generate Page" to create your HTML code</li>
+                <li>Copy the code and save it as an HTML file</li>
             </ol>
-            <p><strong>Note:</strong> This template uses your brand colors (#022350 and #FFFFFF) and is fully responsive.</p>
         </section>
         
-        <section class="embed-generator">
-            <h2>Generate Your Embed Code</h2>
-            <div class="form-group">
-                <label for="embed-url">Content URL</label>
-                <input type="url" id="embed-url" placeholder="https://example.com/embed-content" value="https://example.com/embed-content">
-            </div>
+        <section class="form-container">
+            <h2>Page Details</h2>
             
-            <div class="form-group">
-                <label for="embed-height">Embed Height (optional)</label>
-                <input type="text" id="embed-height" placeholder="600px" value="500px">
-            </div>
-            
-            <button id="generate-btn">Generate Embed Code <i class="fas fa-code"></i></button>
-            
-            <div class="preview-container">
-                <div class="preview-header">
-                    <h2>Embed Code</h2>
-                    <button class="copy-btn" id="copy-btn">
-                        <i class="far fa-copy"></i> Copy Code
-                    </button>
+            <div class="form-section">
+                <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+                
+                <div class="form-group">
+                    <label for="page-title">Page Title</label>
+                    <input type="text" id="page-title" placeholder="My Embedded Content" value="My Embedded Content">
                 </div>
                 
-                <div class="embed-preview">
-                    <div class="code-container">
-                        <pre id="embed-code">&lt;!-- Embed code will appear here --&gt;</pre>
-                    </div>
+                <div class="form-group">
+                    <label for="page-description">Page Description</label>
+                    <textarea id="page-description" placeholder="Description of your embedded content">This page contains an embedded element that showcases important content.</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="favicon-url">Favicon URL (optional)</label>
+                    <input type="url" id="favicon-url" placeholder="https://example.com/favicon.ico">
                 </div>
             </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-link"></i> Embed Content</h3>
+                
+                <div class="form-group">
+                    <label for="embed-url">Content URL</label>
+                    <input type="url" id="embed-url" placeholder="https://example.com/embed-content" value="https://www.youtube.com/embed/dQw4w9WgXcQ">
+                </div>
+                
+                <div class="form-group">
+                    <label for="embed-height">Embed Height</label>
+                    <input type="text" id="embed-height" placeholder="600px" value="500px">
+                </div>
+                
+                <div class="form-group">
+                    <label for="embed-type">Content Type</label>
+                    <select id="embed-type">
+                        <option value="iframe">iFrame (general purpose)</option>
+                        <option value="video">Video</option>
+                        <option value="map">Map</option>
+                        <option value="calendar">Calendar</option>
+                        <option value="social">Social Media</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-palette"></i> Styling Options</h3>
+                
+                <div class="form-group">
+                    <label for="header-color">Header Background Color</label>
+                    <input type="text" id="header-color" value="#022350">
+                </div>
+                
+                <div class="form-group">
+                    <label for="text-color">Text Color</label>
+                    <input type="text" id="text-color" value="#ffffff">
+                </div>
+            </div>
+            
+            <button id="generate-btn">
+                <i class="fas fa-code"></i> Generate Page
+            </button>
         </section>
         
-        <section class="example-embeds">
-            <h2>Example Embeds</h2>
-            <div class="example-card">
-                <div class="example-header">Video Embed</div>
-                <div class="example-body">
-                    <p>Perfect for embedding videos from YouTube, Vimeo, or your own hosting service.</p>
-                    <pre class="example-code">https://www.youtube.com/embed/VIDEO_ID</pre>
-                </div>
+        <section class="preview-container">
+            <div class="preview-header">
+                <h2>Generated HTML Page</h2>
+                <button class="copy-btn" id="copy-btn">
+                    <i class="far fa-copy"></i> Copy Code
+                </button>
             </div>
             
-            <div class="example-card">
-                <div class="example-header">Map Embed</div>
-                <div class="example-body">
-                    <p>Great for Google Maps, Leaflet, or other mapping services.</p>
-                    <pre class="example-code">https://www.google.com/maps/embed?pb=...</pre>
-                </div>
-            </div>
-            
-            <div class="example-card">
-                <div class="example-header">Calendar Embed</div>
-                <div class="example-body">
-                    <p>Ideal for embedding calendar widgets or booking systems.</p>
-                    <pre class="example-code">https://calendar.example.com/embed</pre>
-                </div>
+            <div class="embed-preview">
+                <pre id="generated-html"><!-- Generated HTML will appear here --></pre>
             </div>
         </section>
         
         <footer>
-            <p>Embed Template &copy; 2023 | Brand Colors: #022350 and #FFFFFF</p>
+            <p>Embed Page Generator &copy; 2023 | Brand Colors: #022350 and #FFFFFF</p>
         </footer>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span>Code copied to clipboard!</span>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const generateBtn = document.getElementById('generate-btn');
             const copyBtn = document.getElementById('copy-btn');
-            const embedCode = document.getElementById('embed-code');
-            const urlInput = document.getElementById('embed-url');
-            const heightInput = document.getElementById('embed-height');
+            const generatedHtml = document.getElementById('generated-html');
+            const notification = document.getElementById('notification');
             
-            generateBtn.addEventListener('click', generateEmbedCode);
-            copyBtn.addEventListener('click', copyEmbedCode);
+            generateBtn.addEventListener('click', generateHtml);
+            copyBtn.addEventListener('click', copyHtml);
             
-            function generateEmbedCode() {
-                const url = urlInput.value.trim();
-                const height = heightInput.value.trim() || '500px';
+            function generateHtml() {
+                const pageTitle = document.getElementById('page-title').value;
+                const pageDescription = document.getElementById('page-description').value;
+                const faviconUrl = document.getElementById('favicon-url').value;
+                const embedUrl = document.getElementById('embed-url').value;
+                const embedHeight = document.getElementById('embed-height').value;
+                const embedType = document.getElementById('embed-type').value;
+                const headerColor = document.getElementById('header-color').value;
+                const textColor = document.getElementById('text-color').value;
                 
-                if (!url) {
-                    alert('Please enter a valid URL');
+                if (!pageTitle || !embedUrl) {
+                    alert('Please fill in at least the page title and embed URL');
                     return;
                 }
                 
-                const code = `<div style="background: #022350; color: white; padding: 15px; border-radius: 8px 8px 0 0; font-weight: 600;">Embedded Content</div>
-<iframe src="${url}" width="100%" height="${height}" style="border: none; border-radius: 0 0 8px 8px;" allowfullscreen></iframe>
-<div style="text-align: center; padding: 10px; background: #f1f5f9; color: #64748b; font-size: 14px;">
-    Powered by <strong style="color: #022350;">Your Brand</strong>
-</div>`;
-                
-                embedCode.textContent = code;
+                const htmlCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(pageTitle)}</title>
+    <meta name="description" content="${escapeHtml(pageDescription)}">
+    ${faviconUrl ? `<link rel="icon" href="${escapeHtml(faviconUrl)}" type="image/x-icon">` : ''}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: ${headerColor};
+            color: ${textColor};
+            padding: 25px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .embed-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .embed-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            border-radius: 6px;
+            margin: 0 auto;
+        }
+        
+        iframe {
+            width: 100%;
+            height: ${embedHeight};
+            border: none;
+            border-radius: 6px;
+        }
+        
+        .content-info {
+            max-width: 800px;
+            margin: 30px auto 0;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        
+        .content-info h2 {
+            color: #022350;
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
             }
             
-            function copyEmbedCode() {
+            header {
+                padding: 20px 15px;
+            }
+            
+            iframe {
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            iframe {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>${escapeHtml(pageTitle)}</h1>
+            <p class="description">${escapeHtml(pageDescription)}</p>
+        </header>
+        
+        <div class="embed-wrapper">
+            <div class="embed-container">
+                <iframe src="${escapeHtml(embedUrl)}" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+        
+        <div class="content-info">
+            <h2>About This Content</h2>
+            <p>This embedded content is hosted externally. Please ensure you have a stable internet connection to view it properly.</p>
+            <p>If the content does not appear, you might need to check your browser's security settings or try a different browser.</p>
+        </div>
+        
+        <footer>
+            <p>Embedded Content Page &copy; ${new Date().getFullYear()}</p>
+        </footer>
+    </div>
+</body>
+</html>`;
+                
+                generatedHtml.textContent = htmlCode;
+            }
+            
+            function copyHtml() {
+                if (!generatedHtml.textContent) {
+                    alert('Please generate the HTML code first');
+                    return;
+                }
+                
                 const textArea = document.createElement('textarea');
-                textArea.value = embedCode.textContent;
+                textArea.value = generatedHtml.textContent;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
                 
-                // Visual feedback
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                
+                // Show notification
+                notification.classList.add('show');
                 setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                }, 2000);
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
             
             // Generate initial code
-            generateEmbedCode();
+            generateHtml();
         });
     </script>
 </body>
